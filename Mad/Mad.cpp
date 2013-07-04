@@ -273,9 +273,10 @@ void Mad::recD(void) {
 	if (__enabMesData)
 		std::cout << "Данные переданы в Центр\n";
 	if (__isEnableTrans) {
-		if (__mode == ALGORITHM1)
+		if (__mode == ALGORITHM1) {
+			reinterpret_cast<DataUnit*>(Mad::__buf + 1)->mode = ALGORITHM1;
 			__alg1.pass(__buf, __len);
-		else
+		} else
 			__pcenter->trans(__buf, __len);
 	}
 }

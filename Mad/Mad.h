@@ -70,7 +70,7 @@ class Mad {
 	};
 public:
 	//классы алгоритмы
-	Algorithm1 __alg1;
+	Algorithm1<short> __alg1;
 //ОТКРЫТЫЕ ФУНКЦИИ
 	enum {
 		CONTINUOUS, //непрерывный поток данных
