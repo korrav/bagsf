@@ -17,10 +17,10 @@
 #include <time.h>
 #include "Center.h"
 #include "Algorithm1.h"
+#include <fstream>
 
 //bool filter1(int* buf, unsigned num);
 namespace mad_n {
-
 /*
  *
  */
@@ -54,7 +54,14 @@ class Mad {
 	static bool __enabMesMonit; //если true - разрешено сообщать о приёме мониторограммы
 	static bool __enabMesData; //если true - разрешено сообщать о приёме пакетов данных
 	bool __isEnableTrans;	//разрешение передачи данных на БЦ
+	void closeWriteFile(void); //завершение записи данных в файл
 	center_n::Center* __pcenter;	//объект БЦ
+	struct {
+		bool isWrite; //разрешение произвести запись в файл
+		int numSampl;	//сколько необходимо записать в файл отсчётов; -1
+		int count;		//сколько отсчётов уже записано
+		std::ofstream file; //выходной поток, куда записываются данные
+	} __wFile;
 	//ЗАКРЫТЫЕ ФУНКЦИИ
 	void recD(void); //обработка входных пакетов данных
 	void recM(void); //обработка входных пакетов мониторограмм
@@ -69,6 +76,7 @@ class Mad {
 
 	};
 public:
+	static const int SIZE_P; //в файл должны быть записаны данные только одного пакета
 	//классы алгоритмы
 	Algorithm1 __alg1;
 //ОТКРЫТЫЕ ФУНКЦИИ
@@ -94,12 +102,15 @@ public:
 	void comChangeMode(bool isBrod, int& mode); //команда изменить режим мада, если isBrod = 1 - то для всех мадов
 	void comGetStatus(bool isBrod); //запрос статуса мада, если isBrod = 1 - то для всех мадов
 	unsigned getNumMad(void);	//получить количество мадов
+	void writeFile(int &numSampl, std::string &path); /*осуществить запись принятых данных в файл с именем path c количеством
+	 numSampl; если numSampl == SIZE_P, то записывается только один пакет данных*/
 	Mad(center_n::Center* pcen, unsigned int i = 1,
 			char* cip = "192.168.203.31", unsigned int pD = 31001,
 			unsigned int pM = 31003, unsigned int pC = 31000, bool isET = true);
 	Mad(const Mad&);
 	virtual ~Mad();
 };
+
 void receiptData(Mad* pmad);
 void receiptMon(Mad* pmad);
 void receiptCon(Mad* pmad, int num);

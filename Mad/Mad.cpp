@@ -25,6 +25,7 @@ unsigned int Mad::__numMad = 0;
 unsigned int Mad::__len = 0;
 bool Mad::__enabMesMonit = false;
 bool Mad::__enabMesData = false;
+const int Mad::SIZE_P = -1;
 
 //СТРУКТУРА MONITOR
 #define ID_MONITOR 4	//код, идентифицирующий блок монитор
@@ -50,6 +51,9 @@ Mad::Mad(center_n::Center* pcen, unsigned int i, char* cip, unsigned int pD,
 		unsigned int pM, unsigned int pC, bool isET) :
 		__id(i), __curTimeOut(0), __countFreqOut(0), __isEnableTrans(isET), __pcenter(
 				pcen), __alg1(&center_n::Center::trans, i) {
+	__wFile.isWrite = false;
+	__wFile.numSampl = 0;
+	__wFile.count = 0;
 	//инициализация управляющего канала мада
 	bzero(&__madAddr, sizeof(__madAddr));
 	__madAddr.sin_family = AF_INET;
@@ -268,6 +272,26 @@ void receiptMon(Mad* pmad) {
 }
 
 void Mad::recD(void) {
+	//запись в файл
+	if (__wFile.isWrite) {
+		DataUnit* buf_d = reinterpret_cast<DataUnit*>(Mad::__buf + 1);
+		if (__wFile.numSampl == SIZE_P) {
+			__wFile.file.write(reinterpret_cast<char*>(buf_d->sampl),
+					buf_d->amountCount * 4 * sizeof(int));
+			closeWriteFile();
+		} else {
+			int num;
+			if (__wFile.count - buf_d->amountCount < 0)
+				num = __wFile.count;
+			else
+				num = buf_d->amountCount;
+			__wFile.file.write(reinterpret_cast<char*>(buf_d->sampl),
+					num * 4 * sizeof(int));
+			if ((__wFile.count -= num) <= 0) {
+				closeWriteFile();
+			}
+		}
+	}
 	if (__mode == DETECTION1)
 		checkRate();
 	if (__enabMesData)
@@ -324,6 +348,26 @@ unsigned Mad::getNumMad(void) {
 	return __numMad;
 }
 
+void Mad::closeWriteFile(void) {
+	__wFile.isWrite = false;
+	__wFile.numSampl = 0;
+	__wFile.count = 0;
+	__wFile.file.close();
+	return;
+}
+
+void Mad::writeFile(int& numSampl, std::string &path) {
+	__wFile.file.open(path, std::ios::out | std::ios::binary | std::ios::trunc);
+	if (!__wFile.file.is_open()) {
+		std::cout << "Нет возможности сосздать файл " << path << std::endl;
+		return;
+	} else {
+		__wFile.isWrite = true;
+		__wFile.numSampl = __wFile.count = numSampl;
+	}
+	return;
+}
+
 Mad::~Mad() {
 	if (!__numMad--) {
 		close(__sockData);
@@ -331,6 +375,7 @@ Mad::~Mad() {
 		close(__sockCon);
 	}
 	__sockData = __sockMon = __sockCon = -1;
+	__wFile.file.close();
 	return;
 }
 

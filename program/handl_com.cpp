@@ -39,6 +39,7 @@
 #define ENABLE_FOLLOW_ALG1 "e_f_a1" //разрешить поток сопровождения алгоритма 1
 #define DISABLE_FOLLOW_ALG1 "d_f_a1" //разрешить поток сопровождения алгоритма 1
 #define RUN "run" //выполнить командный файл. Аргумент: имя командного файла
+#define FILL "f" //заполнить файл данных. Аргумент 1: p - размер 1 пакет, число - количество отсчётов. Аргумент 2: имя файла
 using namespace std;
 
 /*ОСТАЛЬНОЕ*/
@@ -233,6 +234,14 @@ static void handl_mad_mes(mad_n::Mad& mad, string* str,
 		mad.__alg1.open_follow();
 	} else if (str[0] == DISABLE_FOLLOW_ALG1 && num_word == 1) {
 		mad.__alg1.close_follow();
+	} else if (str[0] == FILL && (num_word == 2 || num_word == 3)) {
+		int count = mad_n::Mad::SIZE_P;
+		std::string path = "./data";
+		if (str[1] != "p")
+			count = string2int(str[1]);
+		if (num_word != 2)
+			path = str[2];
+		mad.writeFile(count, path);
 	} else
 		throw "Неизвестная команда\n";
 	return;
