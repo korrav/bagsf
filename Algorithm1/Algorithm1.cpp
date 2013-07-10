@@ -78,7 +78,8 @@ Algorithm1::Algorithm1(const Algorithm1& a) {
 void Algorithm1::algorithm(void) {
 	int correct = 0;
 	std::string str = "Создан поток алгоритма 1 для МАД "
-			+ std::to_string(bufStat__.id_MAD) + " pid = " + std::to_string(getpid());
+			+ std::to_string(bufStat__.id_MAD) + " pid = "
+			+ std::to_string(getpid());
 	to_journal(str);
 	for (;;) {
 		if (!isRunThread__)
@@ -92,10 +93,44 @@ void Algorithm1::algorithm(void) {
 		//отсчёты сигналов копируются в пул
 		memcpy(static_cast<void*>(pool.begin), fifo__.front().sampl,
 				sizeof(DataUnitPlusTime::sampl));
+#ifdef DEBUG_ALGORITHM1
+		if (bufStat__.id_MAD == DEBUG_ALGORITHM1) {
+			std::stringstream namefile;
+			namefile << "fullpackage" << "_" << bufStat__.time << "_"
+					<< bufStat__.id_MAD;
+			std::ofstream path(namefile.str(),
+					std::ios::out | std::ios::binary);
+			if (path.is_open()) {
+				path.write(reinterpret_cast<char*>(pool.begin),
+						sizeof(DataUnitPlusTime::sampl));
+				std::cout << "Создан файл " << namefile
+						<< ", содержащий все данные принятого пакета"
+						<< std::endl;
+				path.close();
+			}
+		}
+#endif //DEBUG_ALGORITHM1
 		pool.end = pool.begin + sizeof(fifo__.front().sampl) / sizeof(int);
 		mut__.unlock();
 		//непосредственно фильтрация
 		while ((pool.count + LEN_WINDOW)<= pool.end) {
+#ifdef DEBUG_ALGORITHM1
+			if (bufStat__.id_MAD == DEBUG_ALGORITHM1) {
+				static int count = 0;
+				std::stringstream namefile;
+				namefile << "partpackage" << "_" << bufStat__.time << "_"
+						<< count << "_" << bufStat__.id_MAD;
+				std::ofstream path(namefile.str(),
+						std::ios::out | std::ios::binary);
+				if (path.is_open()) {
+					path.write(reinterpret_cast<char*>(pool.count),
+							LEN_WINDOW * sizeof(int));
+					std::cout << "Создан файл " << namefile << " под номером "
+							<< count << std::endl;
+					path.close();
+				}
+			}
+#endif //DEBUG_ALGORITHM1
 			if (SectionHasNeutrinoLikePulse(
 					reinterpret_cast<unsigned*>(pool.count) /*, LEN_WINDOW*/,
 					true)) {
@@ -152,7 +187,8 @@ void Algorithm1::follow_algorithm(void) {
 	int t;
 	time_t tStamp = time(NULL) + PERIOD;
 	std::string str = "Создан поток сопровождения для алгоритма 1 для МАД "
-			+ std::to_string(bufStat__.id_MAD) + " pid = " + std::to_string(getpid());
+			+ std::to_string(bufStat__.id_MAD) + " pid = "
+			+ std::to_string(getpid());
 	to_journal(str);
 	for (;;) {
 		if (!isRunFollowThread__)
