@@ -97,8 +97,8 @@ void Algorithm1::algorithm(void) {
 		int count = 0;
 		if (fifo__.front().id_MAD == DEBUG_ALGORITHM1) {
 			std::stringstream namefile;
-			namefile << "fullpackage" << "_" << fifo__.front().time << "_"
-					<< fifo__.front().id_MAD;
+			namefile << "fullpackage" << "_" << fifo__.front().numFirstCount
+					<< "_" << fifo__.front().id_MAD;
 			std::ofstream path(namefile.str(),
 					std::ios::out | std::ios::binary);
 			if (path.is_open()) {
@@ -118,8 +118,8 @@ void Algorithm1::algorithm(void) {
 #ifdef DEBUG_ALGORITHM1
 			if (fifo__.front().id_MAD == DEBUG_ALGORITHM1) {
 				std::stringstream namefile;
-				namefile << "partpackage" << "_" << fifo__.front().time << "_"
-						<< count << "_" << fifo__.front().id_MAD;
+				namefile << "partpackage" << "_" << fifo__.front().numFirstCount
+						<< "_" << count << "_" << fifo__.front().id_MAD;
 				std::ofstream path(namefile.str(),
 						std::ios::out | std::ios::binary);
 				if (path.is_open()) {
