@@ -16,7 +16,7 @@
 using namespace std;
 
 static struct {
-	string file = "./log";
+	string file;
 	mutex mut;
 } logfile;
 

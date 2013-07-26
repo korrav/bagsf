@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
 	unsigned int pM = PORT_MONITOROGRAMM;
 	unsigned int pC = PORT_CONTROL;
 	unsigned int pCen = PORT_CENTRAL;
+	set_logfile("./log");
 	//время сна команды после запуска
 	unsigned int timeSleep = 0;
 	//Инициализация аргументами командной строки соответствующих параметров программы

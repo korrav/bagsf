@@ -94,16 +94,17 @@ void Algorithm1::algorithm(void) {
 		memcpy(static_cast<void*>(pool.begin), fifo__.front().sampl,
 				sizeof(DataUnitPlusTime::sampl));
 #ifdef DEBUG_ALGORITHM1
-		if (bufStat__.id_MAD == DEBUG_ALGORITHM1) {
+		int count = 0;
+		if (fifo__.front().id_MAD == DEBUG_ALGORITHM1) {
 			std::stringstream namefile;
-			namefile << "fullpackage" << "_" << bufStat__.time << "_"
-					<< bufStat__.id_MAD;
+			namefile << "fullpackage" << "_" << fifo__.front().time << "_"
+					<< fifo__.front().id_MAD;
 			std::ofstream path(namefile.str(),
 					std::ios::out | std::ios::binary);
 			if (path.is_open()) {
 				path.write(reinterpret_cast<char*>(pool.begin),
 						sizeof(DataUnitPlusTime::sampl));
-				std::cout << "Создан файл " << namefile
+				std::cout << "Создан файл " << namefile.str()
 						<< ", содержащий все данные принятого пакета"
 						<< std::endl;
 				path.close();
@@ -115,20 +116,20 @@ void Algorithm1::algorithm(void) {
 		//непосредственно фильтрация
 		while ((pool.count + LEN_WINDOW)<= pool.end) {
 #ifdef DEBUG_ALGORITHM1
-			if (bufStat__.id_MAD == DEBUG_ALGORITHM1) {
-				static int count = 0;
+			if (fifo__.front().id_MAD == DEBUG_ALGORITHM1) {
 				std::stringstream namefile;
-				namefile << "partpackage" << "_" << bufStat__.time << "_"
-						<< count << "_" << bufStat__.id_MAD;
+				namefile << "partpackage" << "_" << fifo__.front().time << "_"
+						<< count << "_" << fifo__.front().id_MAD;
 				std::ofstream path(namefile.str(),
 						std::ios::out | std::ios::binary);
 				if (path.is_open()) {
 					path.write(reinterpret_cast<char*>(pool.count),
 							LEN_WINDOW * sizeof(int));
-					std::cout << "Создан файл " << namefile << " под номером "
-							<< count << std::endl;
+					std::cout << "Создан файл " << namefile.str()
+							<< " под номером " << count << std::endl;
 					path.close();
 				}
+				count++;
 			}
 #endif //DEBUG_ALGORITHM1
 			if (SectionHasNeutrinoLikePulse(

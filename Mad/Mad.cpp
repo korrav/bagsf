@@ -145,8 +145,7 @@ Mad::Mad(center_n::Center* pcen, unsigned int i, char* cip, unsigned int pD,
 		gain[2] = 41;
 	}
 	comChangeGain(false, gain);
-	if (__id == 1 || __id == 3)
-		__alg1.open_follow();
+	__alg1.open_follow();
 
 	return;
 }
@@ -312,6 +311,9 @@ void receiptData(Mad* pmad) {
 			&& buf_d->id_MAD <= Mad::__numMad) {
 		Mad::__buf[0] = static_cast<unsigned int>(Mad::__timeSync);
 		Mad::__len += sizeof(int);
+		if (buf_d->id_MAD == 2)
+			std::cout << "Принят блок данных от МАД " << buf_d->id_MAD
+					<< std::endl;
 		pmad[(buf_d->id_MAD) - 1].recD();
 	} else
 		std::cout << "Принятый блок данных не прошёл проверку\n";
