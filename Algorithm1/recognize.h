@@ -18,7 +18,8 @@
 //значений отчетов АЦП. Длина массивов = SECTION_LENGTH на выходе true, 
 //если участок данных содержит нейтриноподобные импульсы
 bool SectionHasNeutrinoLikePulse(
-	const unsigned int * Data,
+	const int * data,
+	const int data_length,
 	const bool simple_method = false,
 	const bool debug_info = false 
 ){
@@ -29,10 +30,10 @@ bool SectionHasNeutrinoLikePulse(
 
 	for (i = 0; i < CHNUM; i++) 
 	{
-		FAData[i] = new FA(SECTION_LENGTH);
-		for (j = 0; j < SECTION_LENGTH; j++) 
+		FAData[i] = new FA(data_length);
+		for (j = 0; j < data_length; j++) 
 		{
-			(*FAData[i])[j] = Data[i + CHNUM*j];
+			(*FAData[i])[j] = data[i + CHNUM*j];
 		};
 	};
 

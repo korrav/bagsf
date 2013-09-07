@@ -132,9 +132,8 @@ void Algorithm1::algorithm(void) {
 				count++;
 			}
 #endif //DEBUG_ALGORITHM1
-			if (SectionHasNeutrinoLikePulse(
-					reinterpret_cast<unsigned*>(pool.count) /*, LEN_WINDOW*/,
-					true)) {
+			if (SectionHasNeutrinoLikePulse(pool.count, SECTION_LENGTH, true,
+					false)) {
 				str = "Пойман нейтрино на МАД "
 						+ std::to_string(bufStat__.id_MAD);
 				to_journal(str);

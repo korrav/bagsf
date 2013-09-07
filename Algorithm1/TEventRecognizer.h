@@ -29,9 +29,16 @@ typedef vector <TBipolarPulse> TBipolarPulseVector;
 
 typedef TBipolarPulseVector * pBipolarPulseVector;
 
-static const fp		ADC_UNIT_TIME = 5.e-6,	//s, соотв 200kHz
+static const fp		ADC_UNIT_TIME = 5.3333333e-6,//5.3333333e-6,//соотв 187000Гц // 5.e-6,	//s, соотв 200kHz
 									L = 1.5;								//Характерные размеры кластера установки
 static const int  TIME_WINDOW = int(L/1420/ADC_UNIT_TIME);  //Временное окно (количество отсчетов)
+
+static const int	C = 6,									//C*(W1+W2) > D
+									MIN_D = 25,							//mks 
+									MAX_D = 80;						//mks
+static const fp		SIGMA_LEVEL = 2.5,
+									MIN_A =	4,							//sigma
+									NORM_CHI_SQUARE_THRESHOLD = 0.5;//0.1;
 
 /************************************************/
 //Триггерная функция для отдельной ячейки детектора, возвращает true, если
@@ -65,13 +72,6 @@ public:
 };
 
 /************************************************/
-
-static const int	C = 6,									//C*(W1+W2) > D
-									MIN_D = 30,							//mks 
-									MAX_D = 80;						//mks
-static const fp		SIGMA_LEVEL = 1.3,
-									MIN_A =	5,							//sigma
-									NORM_CHI_SQUARE_THRESHOLD = 0.5;//0.1;
 
 typedef struct {
 	unsigned long index; 

@@ -146,8 +146,8 @@ inline fp D(TVector3 &v1, TVector3 &v2)
 //Направляющие углы Phi,Thet из точки v1 в точку v2
 inline void GetDirection (TVector3 &v1, TVector3 &v2, fp &Phi, fp &Thet)
 {
-	fp X = v2[0] - v1[0];
-	fp Y = v2[1] - v1[1];
+	const fp X = v2[0] - v1[0];
+	const fp Y = v2[1] - v1[1];
 	if (X < 0) Phi = pi + atan( Y / X );
 	else if (Y >= 0) Phi = atan( Y / X ); else Phi = 2*pi + atan( Y / X ); 
 	Thet = acos( (v2[2] - v1[2]) / D(v1,v2) );

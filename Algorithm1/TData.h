@@ -58,7 +58,7 @@ typedef complex <fp> TCmplx;
 #define TN 4							//количество дорожек в файле данных
 #define TConst 0.000005	//Дискретизация по времени
 
-typedef vector <double> TDataVector;
+typedef vector <fp> TDataVector;
 typedef TDataVector * PDataVector;
 typedef valarray <unsigned long> VA;
 typedef valarray <long> SA;
