@@ -199,9 +199,8 @@ inline string print_matrix (const FA & vec, int m, int n, char *mname) //fityk
 //     it's just ignored, 
 
 inline void Jordan(FA &A, FA &b, int n) //fityk
-{//var
+{
 	int i,j;
-//begin
 	/*assert (size(A) == n*n && size(b) == n);*/
     for (/*int*/ i = 0; i < n; i++) {
         fp amax = 0;                    // looking for a pivot element
@@ -266,38 +265,45 @@ inline void reverse_matrix (FA & A, int n) //fityk
 //Перемножает 2 матрицы или вектор и матрицу ma==nb!!!
 //!!! Переписать шаблоном
 inline FA mm (FA * A, FA * B, int na, int manb, int mb)
-{//var
+{
 	FA result(na*mb);
-	int imm,jmm;	
-//begin
+	int imm,jmm, r;
+
 	for (imm = 0; imm < na; imm++) 
 		for (jmm = 0; jmm < mb; jmm++)
-			result[jmm*na+imm] = ( FA((*A)[slice(imm,manb,na)]) * FA((*B)[slice(jmm*manb,manb,1)]) ).sum();
+    {
+       result[jmm*na + imm] = 0;
+       for (int r = 0; r < manb; r++)
+       {
+         result[jmm*na + imm] += (*A)[imm + r*na] * (*B)[r + jmm*mb];
+       };
+    }
+		//result[jmm*na+imm] = ( FA((*A)[slice(imm,manb,na)]) * FA((*B)[slice(jmm*manb,manb,1)]) ).sum();
 	return(result);
-}//end of mm
+}
 
 inline CA mm (CA * A, CA * B, int na, int manb, int mb)
-{//var
+{
 	CA result(na*mb);
 	int imm,jmm;	
-//begin
+
 	for (imm = 0; imm < na; imm++) 
 		for (jmm = 0; jmm < mb; jmm++)
 			result[jmm*na+imm] = ( CA((*A)[slice(imm,manb,na)]) * CA((*B)[slice(jmm*manb,manb,1)]) ).sum();
 	return(result);
-}//end of mm
+}
 
 
 //Транспонирует матрицу,пергружаемая функция заменить шаблоном
 inline FA Transpose (FA * A, int n, int m)
-{//var
+{
 	FA result(n*m); 
 	int it;
-//begin
+
 	for (it = 0; it < m; it++)
 		result[slice(it,n,m)] = FA( (*A)[slice(it*n,n,1)] );
 	return(result);
-}//end of Transpose
+}
 
 
 

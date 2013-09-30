@@ -36,8 +36,8 @@ static const int  TIME_WINDOW = int(L/1420/ADC_UNIT_TIME);  //Временное
 static const int	C = 6,									//C*(W1+W2) > D
 									MIN_D = 25,							//mks 
 									MAX_D = 80;						//mks
-static const fp		SIGMA_LEVEL = 2.5,
-									MIN_A =	4,							//sigma
+static const fp		SIGMA_LEVEL = 2.0,//2.0,
+									MIN_A =	SIGMA_LEVEL * 2.,							//sigma
 									NORM_CHI_SQUARE_THRESHOLD = 0.5;//0.1;
 
 /************************************************/

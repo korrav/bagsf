@@ -221,8 +221,11 @@ TPairVector * TApproximabilityEventRecognizer :: GetPairVector(
 		};
 	};
 	//Очищаем последнюю темповую запись
-	TPairVector::iterator pvi = result->end();
-	result->erase(--pvi);
+  if (result->size() != 0)
+  {
+    TPairVector::iterator pvi = result->end();
+	  result->erase(--pvi);
+  };
 
 	return result;
 };
@@ -335,7 +338,7 @@ TBipolarPulse TApproximabilityEventRecognizer :: GetBipolarPulse(
 				}
 #endif
 
-				if (temp_pair_vector->size() == 2)
+				if ((temp_pair_vector->size() == 2) && ((min_norm_chi_square == 0) || (norm_chi_square < min_norm_chi_square)))
 				{
 					min_norm_chi_square = norm_chi_square;	//Ищем минимум!
 
