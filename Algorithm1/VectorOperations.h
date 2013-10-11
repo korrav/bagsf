@@ -253,9 +253,9 @@ inline void reverse_matrix (FA & A, int n) //fityk
         FA A_copy = A;      
         FA v(n);/*,0);*/
         v = 0;
-		v[i] = 1;
+		    v[i] = 1;
         Jordan(A_copy, v, n);
-		for (int j = 0; j < n; j++) 
+		    for (int j = 0; j < n; j++) 
             A_result[j * n + i] = v[j];
     }
     A = A_result;
@@ -273,7 +273,7 @@ inline FA mm (FA * A, FA * B, int na, int manb, int mb)
 		for (jmm = 0; jmm < mb; jmm++)
     {
        result[jmm*na + imm] = 0;
-       for (int r = 0; r < manb; r++)
+       for (r = 0; r < manb; r++)
        {
          result[jmm*na + imm] += (*A)[imm + r*na] * (*B)[r + jmm*mb];
        };
@@ -370,37 +370,40 @@ inline FA Fit (FA * X, FA * Y, FA * Weights, FA * a, fp * chisq, TApproximatingF
 			nfree = ny-nterms,
 			fi;
 	
-	FA	pder, 
-			yfit, 
-			beta, 
-			temp, 
-			temp2, 
-			alpha, 
-			sigma,
-			sigma1, 
-			yfit1, 
-			c, 
-			array, 
-			b;
+	FA	pder(ny * nterms), 
+			yfit(ny), 
+			beta(1 * nterms), 
+			temp_nterms(1* nterms),
+      temp_ny(ny),
+      temp_ny_nterms(ny * nterms),
+      temp_nterms_ny(nterms * ny),
+      temp_nterms_nterms(nterms * nterms),
+			alpha(nterms * nterms), 
+			sigma(1 * nterms),
+			sigma1(1 * nterms), 
+			yfit1(ny), 
+			c(nterms * nterms), 
+			arr(nterms * nterms);
 	
-	valarray <size_t> diag(nterms);
-	
-	for (fi = 0; fi < nterms; fi++) diag[fi] = fi*(nterms+1); //������ ������������ ���������
-	pder.resize(ny*nterms);
+	valarray <size_t> diag(nterms);	
+	for (fi = 0; fi < nterms; fi++) diag[fi] = fi*(nterms+1); //индексы диагональных элементов
 
 	for (int iter = 0; iter < itmax; iter++)	{	
 		// The user's procedure will return partial derivatives
 		(*AF)(X, a, &yfit, &pder);
 		
 		// Evaluate alpha and beta matricies.
-		temp = (*Y-yfit) * (*Weights);
-		beta = mm(&temp, &pder, 1, ny, nterms); //1*nterms
+		temp_ny = (*Y-yfit) * (*Weights);
+		beta = mm(&temp_ny, &pder, 1, ny, nterms); //1*nterms
 
-		temp.resize(nterms); 
-		temp = 1.;
-		temp = mm(Weights, &temp, ny, 1, nterms) * pder;
-		temp2 = Transpose(&pder, ny, nterms);
-		alpha = mm(&temp2, &temp, nterms, ny, nterms);  //nterms*nterms
+  	temp_nterms = 1.;
+		temp_ny_nterms = mm(Weights, &temp_nterms, ny, 1, nterms) * pder;
+		temp_nterms_ny = Transpose(&pder, ny, nterms);
+		alpha = mm(
+      &temp_nterms_ny, 
+      &temp_ny_nterms, 
+      nterms, ny, nterms
+    );  //nterms*nterms
 
 		//   save current values of return parameters
 		sigma1 = sqrt( 1. / FA (alpha[diag]) ); //Current sigma.1*nterms
@@ -414,24 +417,24 @@ inline FA Fit (FA * X, FA * Y, FA * Weights, FA * a, fp * chisq, TApproximatingF
 
 		if (chisq1 < ((abs(*Y)).sum())/(fp(nfree))) break;
 
-		c = sqrt(FA(alpha[diag]));
-		c = mm(&c, &c, nterms, 1, nterms);  //nterms*nterms
+		temp_nterms = sqrt(FA(alpha[diag]));
+		c = mm(&temp_nterms, &temp_nterms, nterms, 1, nterms);  //nterms*nterms
 
 		int lambdacount = 0;
 		flambda = flambda0;
 		do {
 			lambdacount++;
 			// Normalize alpha to have unit diagonal.
-      array = alpha / c; //nterms*nterms
-			array[diag] = FA(array[diag]) * (1 + flambda);
+      arr = alpha / c; //nterms*nterms
+			arr[diag] = FA(arr[diag]) * (1 + flambda);
 		    
 			// Invert modified curvature matrix to find new parameters.
-			reverse_matrix(array, nterms);
-			temp = array/c; 
-			b = mm(&temp, &beta, nterms, nterms, 1); // New params
-			(*AF)(X, &b, &yfit, &pder);
+			reverse_matrix(arr, nterms);
+			temp_nterms_nterms = arr/c; 
+			temp_nterms = mm(&temp_nterms_nterms, &beta, nterms, nterms, 1); // New params
+			(*AF)(X, &temp_nterms, &yfit, &pder);
 			*chisq = (( pow(*Y - yfit, 2.) * (*Weights) ).sum()) / fp(nfree);// New chisq
-			sigma = sqrt(FA(array[diag]) / FA(alpha[diag]) );// New sigma
+			sigma = sqrt(FA(arr[diag]) / FA(alpha[diag]) );// New sigma
 			//if (!finite(chisq) || (lambdacount >= maxlambdacount) && (chisq >= chisq1)) {
 			if (lambdacount >= maxlambdacount) {
         // Reject changes made this iteration, use old values.
@@ -443,8 +446,8 @@ inline FA Fit (FA * X, FA * Y, FA * Weights, FA * a, fp * chisq, TApproximatingF
 		} while ((*chisq >= chisq1) && (lambdacount < maxlambdacount));//> chisq1);
 		
 		//flambda /= 100;
-    *a=b;// Save new parameter estimate.
-		if (((chisq1-*chisq)/chisq1) <= tol) break;  //Finished?
+    *a = temp_nterms;// Save new parameter estimate.
+		if (((chisq1 - *chisq)/chisq1) <= tol) break;  //Finished?
 	
 	};	//for
 

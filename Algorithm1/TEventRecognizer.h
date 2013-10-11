@@ -102,6 +102,7 @@ inline void ApproximatingFunction (FA * X, FA * params, FA * f, FA * pder)
 {
 	fp A,/*B,*/T,X0;
 	int N = X->size(), NP = 1;
+  FA mx(N), pd(N); 
 
 	(*pder).resize(NP*N);
 	(*f).resize(N);
@@ -110,8 +111,8 @@ inline void ApproximatingFunction (FA * X, FA * params, FA * f, FA * pder)
 	X0 = (*X)[0];
 	T = (*X)[N-1] - X0;
 
-	FA mx = ((*X)-X0) - T/2.;
-	FA pd = sin(mx/T * 2. *pi);
+	mx = ((*X)-X0) - T/2.;
+	pd = sin(mx/T * 2. *pi);
 	*f = A * pd/*+B*/;
 
 	//Частные производные по параметрам

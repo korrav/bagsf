@@ -158,6 +158,7 @@ void Algorithm1::algorithm(void) {
 
 	}
 	pool.end = pool.count = pool.sampl;
+	fifo__.clear();
 	str = "Уничтожен поток алгоритма 1 для МАД "
 			+ std::to_string(bufStat__.id_MAD);
 	to_journal(str);

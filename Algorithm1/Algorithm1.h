@@ -72,7 +72,7 @@ private:
 inline void Algorithm1::close(void) {
 	mut__.lock();
 	isRunThread__ = false;
-	fifo__.clear();
+	close_follow();
 	mut__.unlock();
 
 }
