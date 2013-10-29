@@ -20,7 +20,7 @@
 #define STAT_ALG 5 //идентификатор пакета статистики алгоритма
 #define LEN_WINDOW (SECTION_LENGTH * 4)	 //длина измерительного окна
 namespace mad_n {
-
+//
 Algorithm1::Algorithm1(void (*trans)(void *buf, size_t size), unsigned id) :
 		ptrans(trans) {
 	isRunThread__ = false;
@@ -45,8 +45,9 @@ void Algorithm1::pass(void* buf, size_t& size) {
 
 void Algorithm1::open(void) {
 	isRunThread__ = true;
-	std::thread t(&Algorithm1::algorithm, this);
-	t.detach();
+	/*	std::thread t(&Algorithm1::algorithm, this);
+	 t.detach();*/
+	end_alg = std::async(std::launch::async, &Algorithm1::algorithm, this);
 }
 
 Algorithm1::~Algorithm1() {
@@ -98,15 +99,15 @@ void Algorithm1::algorithm(void) {
 		if (fifo__.front().id_MAD == DEBUG_ALGORITHM1) {
 			std::stringstream namefile;
 			namefile << "fullpackage" << "_" << fifo__.front().numFirstCount
-					<< "_" << fifo__.front().id_MAD;
+			<< "_" << fifo__.front().id_MAD;
 			std::ofstream path(namefile.str(),
 					std::ios::out | std::ios::binary);
 			if (path.is_open()) {
 				path.write(reinterpret_cast<char*>(pool.begin),
 						sizeof(DataUnitPlusTime::sampl));
 				std::cout << "Создан файл " << namefile.str()
-						<< ", содержащий все данные принятого пакета"
-						<< std::endl;
+				<< ", содержащий все данные принятого пакета"
+				<< std::endl;
 				path.close();
 			}
 		}
@@ -114,26 +115,26 @@ void Algorithm1::algorithm(void) {
 		pool.end = pool.begin + sizeof(fifo__.front().sampl) / sizeof(int);
 		mut__.unlock();
 		//непосредственно фильтрация
-		while ((pool.count + LEN_WINDOW)<= pool.end) {
+		while ((pool.count + LEN_WINDOW) <= pool.end) {
 #ifdef DEBUG_ALGORITHM1
 			if (fifo__.front().id_MAD == DEBUG_ALGORITHM1) {
 				std::stringstream namefile;
 				namefile << "partpackage" << "_" << fifo__.front().numFirstCount
-						<< "_" << count << "_" << fifo__.front().id_MAD;
+				<< "_" << count << "_" << fifo__.front().id_MAD;
 				std::ofstream path(namefile.str(),
 						std::ios::out | std::ios::binary);
 				if (path.is_open()) {
 					path.write(reinterpret_cast<char*>(pool.count),
 							LEN_WINDOW * sizeof(int));
 					std::cout << "Создан файл " << namefile.str()
-							<< " под номером " << count << std::endl;
+					<< " под номером " << count << std::endl;
 					path.close();
 				}
 				count++;
 			}
 #endif //DEBUG_ALGORITHM1
 			if (SectionHasNeutrinoLikePulse(pool.count, SECTION_LENGTH, true,
-					false)) {
+			false)) {
 				str = "Пойман нейтрино на МАД "
 						+ std::to_string(bufStat__.id_MAD);
 				to_journal(str);
@@ -167,12 +168,19 @@ void Algorithm1::algorithm(void) {
 
 void Algorithm1::open_follow(void) {
 	isRunFollowThread__ = true;
-	std::thread t1(&Algorithm1::follow_algorithm, this);
-	t1.detach();
+	/*std::thread t1(&Algorithm1::follow_algorithm, this);
+	 t1.detach();*/
+	end_foll_alg = std::async(std::launch::async, &Algorithm1::follow_algorithm,
+			this);
 }
 
 void Algorithm1::close_follow(void) {
-	isRunFollowThread__ = false;
+	if (isRunFollowThread__) {
+		mut__.lock();
+		isRunFollowThread__ = false;
+		mut__.unlock();
+		end_foll_alg.get();
+	}
 }
 
 void Algorithm1::change_period(unsigned p) {

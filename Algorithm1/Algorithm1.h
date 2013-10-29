@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <deque>
 #include <mutex>
+#include <future>
 
 namespace mad_n {
 #define NUM_SAMPL_PACK (1000 * 4) //количество отсчётов в пакете
@@ -48,8 +49,10 @@ private:
 	void toBank(int* buf, int num, DataUnitPlusTime* pack, int first_count); //функция, где блок данных, содержащий выделенный сигнал, упаковывается и пересылается на берег
 	void algorithm(void); //алгоритм распознавания, выполняющийся в отдельном потоке
 	void follow_algorithm(void); //сопровождающий алгоритма распознавания
+	std::future<void> end_alg; //будущий результат, возвращаемый только после уничтожения потока алгоритма
+	std::future<void> end_foll_alg; //будущий результат, возвращаемый только после уничтожения потока алгоритма сопровождения
 
-	unsigned int period__;//перид одного измерения ресурсов памяти, используемой для размещения элементов fifo буфера
+	unsigned int period__; //перид одного измерения ресурсов памяти, используемой для размещения элементов fifo буфера
 	bool isRunThread__;	//поток запущен
 	bool isRunFollowThread__;//поток сопровождения алгоритма распозования запущен
 	struct {
@@ -70,11 +73,13 @@ private:
 };
 
 inline void Algorithm1::close(void) {
-	mut__.lock();
-	isRunThread__ = false;
-	close_follow();
-	mut__.unlock();
-
+	if (isRunThread__) {
+		mut__.lock();
+		isRunThread__ = false;
+		mut__.unlock();
+		close_follow();
+		end_alg.get();
+	}
 }
 
 } /* namespace mad_n */
