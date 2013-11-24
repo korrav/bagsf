@@ -45,8 +45,6 @@ void Algorithm1::pass(void* buf, size_t& size) {
 
 void Algorithm1::open(void) {
 	isRunThread__ = true;
-	/*	std::thread t(&Algorithm1::algorithm, this);
-	 t.detach();*/
 	end_alg = std::async(std::launch::async, &Algorithm1::algorithm, this);
 }
 
@@ -168,8 +166,6 @@ void Algorithm1::algorithm(void) {
 
 void Algorithm1::open_follow(void) {
 	isRunFollowThread__ = true;
-	/*std::thread t1(&Algorithm1::follow_algorithm, this);
-	 t1.detach();*/
 	end_foll_alg = std::async(std::launch::async, &Algorithm1::follow_algorithm,
 			this);
 }
