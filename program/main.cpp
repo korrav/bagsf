@@ -86,17 +86,18 @@ int main(int argc, char* argv[]) {
 	std::string str = "Программа запущена"
 			+ (" pid = " + std::to_string(getpid()));
 	to_journal(str);
-
 	center_n::Center Center(ipC, pCen);
-	mad_n::Mad mad[3] = { mad_n::Mad(&Center, 1, ipm1, pD, pM, pC), mad_n::Mad(
-			&Center, 2, ipm2, pD, pM, pC), mad_n::Mad(&Center, 3, ipm3, pD, pM,
-			pC) };
+	mad_n::Mad::initialize(Center);
+	mad_n::Mad mad[3] = { mad_n::Mad(1, ipm1, pD, pM, pC), mad_n::Mad(2, ipm2,
+			pD, pM, pC), mad_n::Mad(3, ipm3, pD, pM, pC) };
 	//вычисление наибольшого по значению дескриптора
 	int max_d = mad_n::Mad::getSockData();
 	if (max_d < mad_n::Mad::getSockMon())
 		max_d = mad_n::Mad::getSockMon();
 	if (max_d < mad_n::Mad::getSockCon())
 		max_d = mad_n::Mad::getSockCon();
+	if (max_d < mad_n::Mad::__pcenter->getSock())
+		max_d = mad_n::Mad::__pcenter->getSock();
 	//выполнение предварительного файла команд
 	if (scr.is_open())
 		while (scr) {
@@ -118,6 +119,7 @@ int main(int argc, char* argv[]) {
 		FD_SET(mad_n::Mad::getSockData(), &fdin);
 		FD_SET(mad_n::Mad::getSockMon(), &fdin);
 		FD_SET(mad_n::Mad::getSockCon(), &fdin);
+		FD_SET(Center.getSock(), &fdin);
 		//ожидание событий
 		status = select(max_d + 1, &fdin, NULL, NULL, NULL);
 		if (status == -1) {
@@ -143,6 +145,8 @@ int main(int argc, char* argv[]) {
 		}
 		if (FD_ISSET(mad_n::Mad::getSockCon(), &fdin))
 			mad_n::receiptCon(mad, 3);
+		if (FD_ISSET(Center.getSock(), &fdin))
+			Center.receipt();
 	}
 
 }

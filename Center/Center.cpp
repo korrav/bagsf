@@ -6,11 +6,12 @@
  */
 
 #include "Center.h"
+#include "Mad.h"
 
 namespace center_n {
 
-int Center::__buf[20];
 int Center::__sock = -1;
+unsigned int Center::__lenRecCom = 0;
 sockaddr_in Center::__centerAddr;
 std::mutex Center::__mut;
 
@@ -24,7 +25,7 @@ Center::Center(char *cip, unsigned int p) {
 	bzero(&addr, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(p);
-	addr.sin_addr.s_addr = htonl(INADDR_ANY );
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	//создание сокета
 	if (__sock == -1) {
 		__sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -47,14 +48,57 @@ void Center::trans(void* buf, size_t size) {
 	return;
 }
 
-int Center::receipt(void* buf, size_t* size) {
-	*size = recvfrom(__sock, buf, *size, 0, NULL, NULL);
-	return 1;
+void Center::receipt() {
+	__lenRecCom = recvfrom(__sock, __stat_buf.buf,
+			sizeof(__stat_buf.buf) - sizeof(int), 0,
+			NULL, NULL);
+	if (__lenRecCom < 2 * sizeof(int))
+		return;
+	switch (__stat_buf.com.command) {
+	case TO_BEG_START_GASIC:
+		if (__stat_buf.com.dest == MADS) {
+			for (auto & mad : __mads)
+				mad.second->comChangeMode(false, mad_n::Mad::GASIK);
+			sendAnswer(YES);
+		}
+		break;
+	case TO_BEG_STOP_GASIC:
+		if (__stat_buf.com.dest == MADS) {
+			for (auto & mad : __mads)
+				mad.second->comChangeMode(false, mad_n::Mad::PREVIOUS);
+			sendAnswer(YES);
+		}
+		break;
+	default:
+		std::cerr << "Принята неизвестная команда от Берегового центра";
+		return;
+	}
 }
 
 Center::Center(const Center& a) {
 	this->__centerAddr = a.__centerAddr;
 	return;
+}
+
+void Center::addMad(const unsigned int& id, mad_n::Mad* mad) {
+	if (!__mads.insert(std::make_pair(id, mad)).second)
+		std::cerr << "Попытка вставить объект Мад с идентификатором " << id
+				<< " в контейнер отслеживаемых "
+						" Мадов объектом берегового центра потерпела крах"
+				<< std::endl;
+	return;
+}
+
+void Center::remMad(const unsigned int& id) {
+	__mads.erase(id);
+	return;
+}
+
+void Center::sendAnswer(const enum resultCommand& result) {
+	__stat_buf.buf[__lenRecCom / sizeof(int)] = result;
+	sendto(__sock, reinterpret_cast<void*>(&__stat_buf),
+			__lenRecCom + 2 * sizeof(int), 0,
+			reinterpret_cast<sockaddr*>(&__centerAddr), sizeof(__centerAddr));
 }
 
 Center::~Center() {

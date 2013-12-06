@@ -27,9 +27,10 @@
 #define SET_MODE "s_m"	//команда установить режим работы. Аргументы: 1; значение коэффициента усиления
 //режимы работы
 #define CONT    "c"		//непрерывный поток данных
-#define	DET1    "d1" 	//фильтрованный поток данных (1 алгоритм распознавания)
+#define	DET1    "d1" 	//фильтрованный поток данных (алгоритм распознавания по превышению порога)
 #define	SIL     "s"     //режим молчания
 #define	ALGOR1	"a1"	//режим первого алгоритма
+#define	GAS	"g"	//режим Гасик
 #define DISABLE_MES_MONITOR  "d_m" //запретить сообщать о приёме мониторограммы. Аргументы: 0
 #define ENABLE_MES_DATA  "e_d" //разрешить сообщать о приёме пакетов данных. Аргументы: 0
 #define DISABLE_MES_DATA  "d_d" //запретить сообщать о приёме пакетов данных. Аргументы: 0
@@ -182,6 +183,8 @@ static void handl_all_mad_mes(mad_n::Mad* pmad, string* str,
 			mode = mad_n::Mad::SILENCE;
 		else if (str[1] == ALGOR1)
 			mode = mad_n::Mad::ALGORITHM1;
+		else if (str[1] == GAS)
+			mode = mad_n::Mad::GASIK;
 		else {
 			cout << "Такой режим работы не поддерживается" << std::endl;
 			return;
@@ -222,6 +225,8 @@ static void handl_mad_mes(mad_n::Mad& mad, string* str,
 			mode = mad_n::Mad::SILENCE;
 		else if (str[1] == ALGOR1)
 			mode = mad_n::Mad::ALGORITHM1;
+		else if (str[1] == GAS)
+			mode = mad_n::Mad::GASIK;
 		else {
 			cout << "Такой режим работы не поддерживается" << std::endl;
 			return;

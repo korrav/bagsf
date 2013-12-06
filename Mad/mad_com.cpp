@@ -20,7 +20,7 @@ void Mad::comChangeGain(bool isBrod, int * gain) {
 				reinterpret_cast<sockaddr*>(&__madAddr), sizeof(__madAddr));
 }
 
-void Mad::comChangeNoise(bool isBrod, int& noise) {
+void Mad::comChangeNoise(bool isBrod, int noise) {
 	int command[2] = { COM_SET_NOISE, noise };
 	if (isBrod)
 		sendto(__sockCon, reinterpret_cast<void*>(command), sizeof(command), 0,
@@ -31,7 +31,13 @@ void Mad::comChangeNoise(bool isBrod, int& noise) {
 				reinterpret_cast<sockaddr*>(&__madAddr), sizeof(__madAddr));
 }
 
-void Mad::comChangeMode(bool isBrod, int& mode) {
+void Mad::comChangeMode(bool isBrod, int mode) {
+	if (mode == PREVIOUS) {
+		releaseSettings();
+		return;
+	}
+	//сохранении копии текущих установок
+	copySettings();
 	//закрытие предыдущего режима
 	if (__mode == ALGORITHM1)
 		__alg1.close();
