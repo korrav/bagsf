@@ -31,6 +31,7 @@
 #define	SIL     "s"     //режим молчания
 #define	ALGOR1	"a1"	//режим первого алгоритма
 #define	GAS	"g"	//режим Гасик
+
 #define DISABLE_MES_MONITOR  "d_m" //запретить сообщать о приёме мониторограммы. Аргументы: 0
 #define ENABLE_MES_DATA  "e_d" //разрешить сообщать о приёме пакетов данных. Аргументы: 0
 #define DISABLE_MES_DATA  "d_d" //запретить сообщать о приёме пакетов данных. Аргументы: 0
@@ -41,6 +42,7 @@
 #define DISABLE_FOLLOW_ALG1 "d_f_a1" //разрешить поток сопровождения алгоритма 1
 #define RUN "run" //выполнить командный файл. Аргумент: имя командного файла
 #define FILL "f" //заполнить файл данных. Аргумент 1: p - размер 1 пакет, число - количество отсчётов. Аргумент 2: имя файла
+#define SET_WPWA "sww" //изменить размерности пакета данных в режиме DETECTION1 мада. Аргумент1: количество отсчётов до события. Аргумент 2: после события
 using namespace std;
 
 /*ОСТАЛЬНОЕ*/
@@ -171,6 +173,10 @@ static void handl_all_mad_mes(mad_n::Mad* pmad, string* str,
 	} else if (str[0] == SET_NOISE && num_word == 2) {
 		int noise = string2int(str[1]);
 		pmad->comChangeNoise(true, noise);
+	} else if (str[0] == SET_WPWA && num_word == 3) {
+		int wp = string2int(str[1]);
+		int wa = string2int(str[2]);
+		pmad->comChangeWPWA(false, wp, wa);
 	} else if (str[0] == GET_STATUS && num_word == 1) {
 		pmad->comGetStatus(true);
 	} else if (str[0] == SET_MODE && num_word == 2) {
@@ -213,6 +219,10 @@ static void handl_mad_mes(mad_n::Mad& mad, string* str,
 	} else if (str[0] == SET_NOISE && num_word == 2) {
 		int noise = string2int(str[1]);
 		mad.comChangeNoise(false, noise);
+	} else if (str[0] == SET_WPWA && num_word == 3) {
+		int wp = string2int(str[1]);
+		int wa = string2int(str[2]);
+		mad.comChangeWPWA(false, wp, wa);
 	} else if (str[0] == GET_STATUS && num_word == 1) {
 		mad.comGetStatus(false);
 	} else if (str[0] == SET_MODE && num_word == 2) {

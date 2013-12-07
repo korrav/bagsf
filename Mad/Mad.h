@@ -81,8 +81,8 @@ class Mad {
 		COM_SET_GAIN = 2, //изменить коэфиициент усиления
 		COM_SET_MODE = 4, //изменить режим работы
 		COM_GET_STATUS_MAD = 8, //запрос глобальной структуры состояния мада
-		COM_SET_NOISE = 10 //изменить шумовой порог
-
+		COM_SET_NOISE = 10, //изменить шумовой порог
+		COM_SET_WPWA = 11 //изменить размерности пакета данных в режиме DETECTION1
 	};
 public:
 	static const int SIZE_P; //в файл должны быть записаны данные только одного пакета
@@ -113,6 +113,8 @@ public:
 	void comChangeGain(bool isBrod, int *gain); //команда изменить коэффициент усиления мада, если isBrod = 1 - то для всех мадов
 	void comChangeNoise(bool isBrod, int noise); //команда изменить шумовой порог мада, если isBrod = 1 - то для всех мадов
 	void comChangeMode(bool isBrod, int mode); //команда изменить режим мада, если isBrod = 1 - то для всех мадов
+	void comChangeWPWA(bool isBrod, int wp, int wa); /*команда изменить размерности пакета данных в режиме DETECTION1 мада, если isBrod = 1 - то для всех мадов
+	 wp - количество отсчётов до события, wa -после события*/
 	void comGetStatus(bool isBrod); //запрос статуса мада, если isBrod = 1 - то для всех мадов
 	unsigned getNumMad(void);	//получить количество мадов
 	void writeFile(int &numSampl, std::string &path); /*осуществить запись принятых данных в файл с именем path c количеством
@@ -121,7 +123,7 @@ public:
 	void releaseSettings(void); //принятие копии установок МАД
 	Mad(unsigned int i = 1, char* cip = "192.168.203.31", unsigned int pD =
 			31001, unsigned int pM = 31003, unsigned int pC = 31000, bool isET =
-	true);
+			true);
 	Mad(const Mad&);
 	virtual ~Mad();
 };

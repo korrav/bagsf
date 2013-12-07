@@ -31,6 +31,18 @@ void Mad::comChangeNoise(bool isBrod, int noise) {
 				reinterpret_cast<sockaddr*>(&__madAddr), sizeof(__madAddr));
 }
 
+void Mad::comChangeWPWA(bool isBrod, int wp, int wa) {
+	int command[3] = { COM_SET_WPWA, wp, wa };
+	if (isBrod)
+		sendto(__sockCon, reinterpret_cast<void*>(command), sizeof(command), 0,
+				reinterpret_cast<sockaddr*>(&__madAddr_brod),
+				sizeof(__madAddr_brod));
+	else
+		sendto(__sockCon, reinterpret_cast<void*>(command), sizeof(command), 0,
+				reinterpret_cast<sockaddr*>(&__madAddr), sizeof(__madAddr));
+	return;
+}
+
 void Mad::comChangeMode(bool isBrod, int mode) {
 	if (mode == PREVIOUS) {
 		releaseSettings();

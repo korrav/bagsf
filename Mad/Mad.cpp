@@ -45,6 +45,8 @@ struct status_MAD {
 	int gain[4]; //текущий коэффициент усиления (в абсолютных значениях)
 	int modeData_aq; //текущий режим сбора данных МАД
 	int NoiseThreshold; //текущий шумовой порог алгоритма распознавания
+	int wp; //количество отсчётов до события; используется в режиме DETECT1
+	int wa; //количество отсчётов после события; используется в режиме DETECT1
 };
 
 void hand_SIGALRM(int);
@@ -235,15 +237,26 @@ void receiptCon(Mad* pmad, int num) {
 		else
 			smode = "неизвестный";
 		std::cout << "Мад " << id << ": режим " << smode
-				<< "   коэффициенты усиления каналов: " << pbuf->gain[0] << " "
+				<< " коэффициенты усиления каналов: " << pbuf->gain[0] << " "
 				<< pbuf->gain[1] << " " << pbuf->gain[2] << " " << pbuf->gain[3]
-				<< " пороговый шум " << pbuf->NoiseThreshold << std::endl;
+				<< " пороговый шум " << pbuf->NoiseThreshold
+				<< "\nколичество отсчётов до события(DET1) " << pbuf->wp
+				<< "\nколичество отсчётов после события(DET1) " << pbuf->wp
+				<< std::endl;
 	}
 		break;
 	case Mad::COM_SET_MODE:
 		if (Mad::__len != 2 * sizeof(int))
 			return;
 		std::cout << "Мад " << id << ": команда изменить режим работы"
+				<< (pmad->__buf[1] ? " успешно выполнена" : " потерпела неудачу")
+				<< std::endl;
+		break;
+	case Mad::COM_SET_WPWA:
+		if (Mad::__len != 2 * sizeof(int))
+			return;
+		std::cout << "Мад " << id
+				<< ": команда изменить размерности пакета данных в режиме DETECTION1"
 				<< (pmad->__buf[1] ? " успешно выполнена" : " потерпела неудачу")
 				<< std::endl;
 		break;
