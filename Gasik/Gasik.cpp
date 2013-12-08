@@ -17,11 +17,12 @@ Gasik::~Gasik() {
 	close();
 	mut__.unlock();
 }
-void Gasik::pass(void* buf, size_t& size) {
-	if (isRunThread__ && size == sizeof(DataUnitPlusTime)) {
-		DataUnitPlusTime* pu = reinterpret_cast<DataUnitPlusTime*>(buf);
+void Gasik::pass(const int* buf, unsigned size) {
+	if (isRunThread__ && size > sizeof(DataUnitPlusTime) / sizeof(int)) {
+		int* lbuf = new int[size];
+		std::copy(buf, buf + size, lbuf);
 		mut__.lock();
-		fifo__.push_back(*pu);
+		fifo__.push_back(std::unique_ptr<int[]>(lbuf));
 		mut__.unlock();
 	}
 	return;
@@ -40,8 +41,8 @@ void Gasik::close(void) {
 	}
 }
 
-Gasik::Gasik(const Gasik& a) {
-	this->fifo__ = a.fifo__;
+Gasik::Gasik(Gasik&& a) {
+	this->fifo__ = std::move(a.fifo__);
 	this->isRunThread__ = a.isRunThread__;
 	this->ptrans = a.ptrans;
 	return;
@@ -56,7 +57,9 @@ void Gasik::algorithm(void) {
 			mut__.unlock();
 			continue;
 		}
-		ptrans(&fifo__.front(), sizeof(DataUnitPlusTime));
+		DataUnitPlusTime* data = reinterpret_cast<DataUnitPlusTime*>(fifo__.front().get());
+		ptrans(&fifo__.front(),
+				sizeof(DataUnitPlusTime) + data->amountCount * 4 * sizeof(int));
 		fifo__.pop_front();
 		mut__.unlock();
 	}

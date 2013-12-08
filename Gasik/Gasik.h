@@ -11,6 +11,8 @@
 #include <deque>
 #include <mutex>
 #include <future>
+#include <memory>
+#include <algorithm>
 
 #ifndef GASIK_H_
 #define GASIK_H_
@@ -22,6 +24,7 @@ namespace mad_n {
  */
 class Gasik {
 public:
+	typedef std::deque<std::unique_ptr<int[]> > deqU;
 	struct DataUnitPlusTime {
 		unsigned time;
 		int ident; //идентификатор блока данных
@@ -29,17 +32,17 @@ public:
 		unsigned int numFirstCount; //номер первого отсчёта
 		int amountCount; //количество отсчётов (1 отс = 4 x 4 байт)
 		unsigned int id_MAD; //идентификатор МАДа
-		int sampl[NUM_SAMPL_GASIK];
+		//int sampl[NUM_SAMPL_GASIK];
 	};
-	void pass(void* buf, size_t& size);	//передача пакета в алгоритм
+	void pass(const int* buf, unsigned size);	//передача пакета в алгоритм
 	void open(void); //открытие потока алгоритма
 	void close(void); //закрытие потока алгоритма
 	Gasik(void (*trans)(void *buf, size_t size), unsigned const& id);
-	Gasik(const Gasik& a);
+	Gasik(Gasik&& a);
 	virtual ~Gasik();
 private:
 	std::mutex mut__;
-	std::deque<DataUnitPlusTime> fifo__;	//очередь пакетов
+	deqU fifo__;	//очередь пакетов
 	void (*ptrans)(void *buf, size_t size); //указатель на функцию передачи выделенных сигналов на берег
 	bool isRunThread__;	//поток запущен
 	std::future<void> end__; //будущий результат, возвращаемый только после уничтожения потока алгоритма

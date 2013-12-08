@@ -224,6 +224,12 @@ void receiptCon(Mad* pmad, int num) {
 				smode = "алгоритм 1";
 			else
 				smode = "несоотвествия с режимом БЭга";
+		}
+		if (pmad[id - 1].__mode == Mad::GASIK) {
+			if (pbuf->modeData_aq == Mad::DETECTION1)
+				smode = "Гасик";
+			else
+				smode = "несоотвествия с режимом БЭга";
 		} else if (pbuf->modeData_aq != pmad[id - 1].__mode)
 			smode = "несоотвествия с режимом БЭга";
 		else if (pbuf->modeData_aq == Mad::CONTINUOUS)
@@ -232,8 +238,6 @@ void receiptCon(Mad* pmad, int num) {
 			smode = "фильтрованный";
 		else if (pbuf->modeData_aq == Mad::SILENCE)
 			smode = "молчания";
-		else if (pbuf->modeData_aq == Mad::GASIK)
-			smode = "Гасик";
 		else
 			smode = "неизвестный";
 		std::cout << "Мад " << id << ": режим " << smode
@@ -321,6 +325,8 @@ void Mad::recD(void) {
 	if (__isEnableTrans) {
 		if (__mode == ALGORITHM1)
 			__alg1.pass(__buf, __len);
+		else if (__mode == GASIK)
+			__gasik.pass(__buf, __len);
 		else
 			__pcenter->trans(__buf, __len);
 	}
@@ -354,8 +360,9 @@ void Mad::checkRate(void) {
 	return;
 }
 
-Mad::Mad(const Mad& a) :
-		__alg1(a.__alg1), __gasik(a.__gasik) {
+Mad::Mad(Mad&& a) :
+		__alg1(a.__alg1) {
+	this->__gasik = std::move(a.__gasik);
 	this->__id = a.__id;
 	this->__curTimeOut = a.__curTimeOut;
 	this->__countFreqOut = a.__countFreqOut;

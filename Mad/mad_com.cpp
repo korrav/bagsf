@@ -53,12 +53,18 @@ void Mad::comChangeMode(bool isBrod, int mode) {
 	//закрытие предыдущего режима
 	if (__mode == ALGORITHM1)
 		__alg1.close();
+	else if (__mode == GASIK)
+		__gasik.close();
 	//открытие нового режима
 	__mode = mode;
 	if (__mode == ALGORITHM1) {
 		__alg1.open();
 		__isEnableTrans = true;
 		mode = CONTINUOUS;
+	} else if (__mode == GASIK) {
+		__gasik.open();
+		__isEnableTrans = true;
+		mode = DETECTION1;
 	}
 	//передача команды
 	int command[2] = { COM_SET_MODE, mode };

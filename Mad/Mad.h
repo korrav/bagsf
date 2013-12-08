@@ -124,7 +124,7 @@ public:
 	Mad(unsigned int i = 1, char* cip = "192.168.203.31", unsigned int pD =
 			31001, unsigned int pM = 31003, unsigned int pC = 31000, bool isET =
 			true);
-	Mad(const Mad&);
+	Mad(Mad&&);
 	virtual ~Mad();
 };
 
