@@ -48,7 +48,7 @@ class Center {
 		NO = 0, YES
 	}; // Результат выполнения команды
 	struct {
-		int identif = CONTROL_CENTER;
+		int identif;
 		union {
 			int buf[100];	//буфер принятых данных
 			struct {

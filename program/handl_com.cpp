@@ -31,6 +31,7 @@
 #define	SIL     "s"     //режим молчания
 #define	ALGOR1	"a1"	//режим первого алгоритма
 #define	GAS	"g"	//режим Гасик
+#define GAS_INIT "g_i" //режим Гасик(начальные условия)
 
 #define DISABLE_MES_MONITOR  "d_m" //запретить сообщать о приёме мониторограммы. Аргументы: 0
 #define ENABLE_MES_DATA  "e_d" //разрешить сообщать о приёме пакетов данных. Аргументы: 0
@@ -226,6 +227,10 @@ static void handl_mad_mes(mad_n::Mad& mad, string* str,
 	} else if (str[0] == GET_STATUS && num_word == 1) {
 		mad.comGetStatus(false);
 	} else if (str[0] == SET_MODE && num_word == 2) {
+		if (str[1] == GAS_INIT) {
+			mad.comChangeModeGasikInit();
+			return;
+		}
 		int mode = 0;
 		if (str[1] == CONT)
 			mode = mad_n::Mad::CONTINUOUS;

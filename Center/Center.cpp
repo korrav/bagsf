@@ -8,6 +8,7 @@
 #include "Center.h"
 #include "Mad.h"
 
+#define MAX_SIZE_SAMPL_SEND 4100 //определяет длину буфера передачи сокета
 namespace center_n {
 
 int Center::__sock = -1;
@@ -16,6 +17,7 @@ sockaddr_in Center::__centerAddr;
 std::mutex Center::__mut;
 
 Center::Center(char *cip, unsigned int p) {
+	__stat_buf.identif = CONTROL_CENTER;
 	//инициализация управляющего канала БЦ
 	bzero(&__centerAddr, sizeof(__centerAddr));
 	__centerAddr.sin_family = AF_INET;
@@ -35,6 +37,14 @@ Center::Center(char *cip, unsigned int p) {
 		}
 		if (bind(__sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr))) {
 			std::cerr << "socket for Center not bind\n";
+			exit(1);
+		}
+		int sizeSend = 2 * MAX_SIZE_SAMPL_SEND * 4 * sizeof(int);
+		if (setsockopt(__sock, SOL_SOCKET, SO_SNDBUF, &sizeSend, sizeof(int))
+				== -1) {
+			std::cerr
+					<< "Не поддерживается объём буфера передачи сокета Center в размере "
+					<< sizeSend << " байт\n";
 			exit(1);
 		}
 	}
@@ -58,7 +68,7 @@ void Center::receipt() {
 	case TO_BEG_START_GASIC:
 		if (__stat_buf.com.dest == MADS) {
 			for (auto & mad : __mads)
-				mad.second->comChangeMode(false, mad_n::Mad::GASIK);
+				mad.second->comChangeModeGasikInit();
 			sendAnswer(YES);
 		}
 		break;

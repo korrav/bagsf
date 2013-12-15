@@ -24,21 +24,23 @@ namespace mad_n {
  */
 class Gasik {
 public:
-	typedef std::deque<std::unique_ptr<int[]> > deqU;
+	typedef std::deque<std::unique_ptr<int8_t[]> > deqU;
 	struct DataUnitPlusTime {
 		unsigned time;
 		int ident; //идентификатор блока данных
 		int mode; //режим сбора данных
+		int gain[4]; //текущий коэффициент усиления (в абсолютных значениях)
 		unsigned int numFirstCount; //номер первого отсчёта
 		int amountCount; //количество отсчётов (1 отс = 4 x 4 байт)
 		unsigned int id_MAD; //идентификатор МАДа
 		//int sampl[NUM_SAMPL_GASIK];
 	};
-	void pass(const int* buf, unsigned size);	//передача пакета в алгоритм
+	void pass(void* buf, size_t& size);	//передача пакета в алгоритм
 	void open(void); //открытие потока алгоритма
 	void close(void); //закрытие потока алгоритма
-	Gasik(void (*trans)(void *buf, size_t size), unsigned const& id);
+	Gasik(void (*trans)(void *buf, size_t size));
 	Gasik(Gasik&& a);
+	Gasik& operator =(Gasik&& a);
 	virtual ~Gasik();
 private:
 	std::mutex mut__;

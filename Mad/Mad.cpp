@@ -28,6 +28,9 @@ bool Mad::__enabMesMonit = false;
 bool Mad::__enabMesData = false;
 const int Mad::SIZE_P = -1;
 center_n::Center* Mad::__pcenter = nullptr;
+const int Mad::GAINS_GASIK_MAD__[4] = { 20, 20, 20, 20 };
+const int Mad::GAINS_GASIK_MAD3__[4] = { 20, 15, 20, 20 };
+const int Mad::NOISE_GASIK = 10;
 
 //СТРУКТУРА MONITOR
 #define ID_MONITOR 4	//код, идентифицирующий блок монитор
@@ -54,8 +57,7 @@ void hand_SIGALRM(int);
 Mad::Mad(unsigned int i, char* cip, unsigned int pD, unsigned int pM,
 		unsigned int pC, bool isET) :
 		__id(i), __curTimeOut(0), __countFreqOut(0), __isEnableTrans(isET), __alg1(
-				&center_n::Center::trans, i), __gasik(&center_n::Center::trans,
-				i) {
+				&center_n::Center::trans, i), __gasik(&center_n::Center::trans) {
 	if (__pcenter == nullptr) {
 		std::cerr << "Класс Mad не инициализирован\n";
 		exit(1);
@@ -224,8 +226,7 @@ void receiptCon(Mad* pmad, int num) {
 				smode = "алгоритм 1";
 			else
 				smode = "несоотвествия с режимом БЭга";
-		}
-		if (pmad[id - 1].__mode == Mad::GASIK) {
+		} else if (pmad[id - 1].__mode == Mad::GASIK) {
 			if (pbuf->modeData_aq == Mad::DETECTION1)
 				smode = "Гасик";
 			else
@@ -245,7 +246,7 @@ void receiptCon(Mad* pmad, int num) {
 				<< pbuf->gain[1] << " " << pbuf->gain[2] << " " << pbuf->gain[3]
 				<< " пороговый шум " << pbuf->NoiseThreshold
 				<< "\nколичество отсчётов до события(DET1) " << pbuf->wp
-				<< "\nколичество отсчётов после события(DET1) " << pbuf->wp
+				<< "\nколичество отсчётов после события(DET1) " << pbuf->wa
 				<< std::endl;
 	}
 		break;
@@ -302,7 +303,7 @@ void Mad::recD(void) {
 	//запись в файл
 	if (__wFile.isWrite) {
 		if (__wFile.numSampl == SIZE_P) {
-			__wFile.file.write(reinterpret_cast<char*>(buf_d->sampl),
+			__wFile.file.write(reinterpret_cast<char*>(&buf_d->sampl),
 					buf_d->amountCount * 4 * sizeof(int));
 			closeWriteFile();
 		} else {
@@ -311,7 +312,7 @@ void Mad::recD(void) {
 				num = __wFile.count;
 			else
 				num = buf_d->amountCount;
-			__wFile.file.write(reinterpret_cast<char*>(buf_d->sampl),
+			__wFile.file.write(reinterpret_cast<char*>(&buf_d->sampl),
 					num * 4 * sizeof(int));
 			if ((__wFile.count -= num) <= 0) {
 				closeWriteFile();
@@ -361,9 +362,8 @@ void Mad::checkRate(void) {
 }
 
 Mad::Mad(Mad&& a) :
-		__alg1(a.__alg1) {
+		__id(a.__id), __alg1(a.__alg1), __gasik(std::move(a.__gasik)) {
 	this->__gasik = std::move(a.__gasik);
-	this->__id = a.__id;
 	this->__curTimeOut = a.__curTimeOut;
 	this->__countFreqOut = a.__countFreqOut;
 	this->__isEnableTrans = a.__isEnableTrans;
@@ -391,7 +391,7 @@ void Mad::closeWriteFile(void) {
 void Mad::writeFile(int& numSampl, std::string &path) {
 	__wFile.file.open(path, std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!__wFile.file.is_open()) {
-		std::cout << "Нет возможности сосздать файл " << path << std::endl;
+		std::cout << "Нет возможности создать файл " << path << std::endl;
 		return;
 	} else {
 		__wFile.isWrite = true;

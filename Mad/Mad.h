@@ -33,6 +33,7 @@ namespace mad_n {
 struct DataUnit {
 	int ident; //идентификатор блока данных
 	int mode; //режим сбора данных
+	int gain[4]; //текущий коэффициент усиления (в абсолютных значениях)
 	unsigned int numFirstCount; //номер первого отсчёта
 	int amountCount; //количество отсчётов (1 отс = 4 x 4 байт)
 	unsigned int id_MAD; //идентификатор МАДа
@@ -59,11 +60,14 @@ class Mad {
 	static bool __enabMesMonit; //если true - разрешено сообщать о приёме мониторограммы
 	static bool __enabMesData; //если true - разрешено сообщать о приёме пакетов данных
 	bool __isEnableTrans;	//разрешение передачи данных на БЦ
+	static const int NOISE_GASIK;
+	static const int GAINS_GASIK_MAD__[4];
+	static const int GAINS_GASIK_MAD3__[4];
 	void closeWriteFile(void); //завершение записи данных в файл
 	struct {
 		bool isWrite; //разрешение произвести запись в файл
 		int numSampl;	//сколько необходимо записать в файл отсчётов; -1
-		int count;		//сколько отсчётов уже записано
+		int count;		//сколько ещё осталось записать
 		std::ofstream file; //выходной поток, куда записываются данные
 	} __wFile;
 	struct {
@@ -110,9 +114,10 @@ public:
 	static bool getIsEnableMesMonitor(void); //получить статус сообщений о приёме мониторограмм
 	static void enableMesData(bool status); //разрешить или запретить сообщать о приёме пакетов данных
 	static bool getIsEnableMesData(void); //получить статус сообщений о приёме пакетов данных
-	void comChangeGain(bool isBrod, int *gain); //команда изменить коэффициент усиления мада, если isBrod = 1 - то для всех мадов
-	void comChangeNoise(bool isBrod, int noise); //команда изменить шумовой порог мада, если isBrod = 1 - то для всех мадов
+	void comChangeGain(bool isBrod, const int *gain); //команда изменить коэффициент усиления мада, если isBrod = 1 - то для всех мадов
+	void comChangeNoise(bool isBrod, const int& noise); //команда изменить шумовой порог мада, если isBrod = 1 - то для всех мадов
 	void comChangeMode(bool isBrod, int mode); //команда изменить режим мада, если isBrod = 1 - то для всех мадов
+	void comChangeModeGasikInit(void); //команда изменить режим мада, если isBrod = 1 - то для всех мадов
 	void comChangeWPWA(bool isBrod, int wp, int wa); /*команда изменить размерности пакета данных в режиме DETECTION1 мада, если isBrod = 1 - то для всех мадов
 	 wp - количество отсчётов до события, wa -после события*/
 	void comGetStatus(bool isBrod); //запрос статуса мада, если isBrod = 1 - то для всех мадов
@@ -121,6 +126,8 @@ public:
 	 numSampl; если numSampl == SIZE_P, то записывается только один пакет данных*/
 	void copySettings(void); //сохранение копии установок МАД
 	void releaseSettings(void); //принятие копии установок МАД
+	unsigned int getId() const;
+	void setId(unsigned int id);
 	Mad(unsigned int i = 1, char* cip = "192.168.203.31", unsigned int pD =
 			31001, unsigned int pM = 31003, unsigned int pC = 31000, bool isET =
 			true);
@@ -158,6 +165,14 @@ inline void Mad::enableMesData(bool status) {
 
 inline bool Mad::getIsEnableMesData(void) {
 	return __enabMesData;
+}
+
+inline unsigned int  Mad::getId() const {
+	return __id;
+}
+
+inline void  Mad::setId(unsigned int id) {
+	__id = id;
 }
 
 } /* namespace mad_n */

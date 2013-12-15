@@ -27,6 +27,7 @@ public:
 		unsigned time;
 		int ident; //идентификатор блока данных
 		int mode; //режим сбора данных
+		int gain[4]; //текущий коэффициент усиления (в абсолютных значениях)
 		unsigned int numFirstCount; //номер первого отсчёта
 		int amountCount; //количество отсчётов (1 отс = 4 x 4 байт)
 		unsigned int id_MAD; //идентификатор МАДа

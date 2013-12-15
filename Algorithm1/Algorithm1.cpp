@@ -36,6 +36,7 @@ Algorithm1::Algorithm1(void (*trans)(void *buf, size_t size), unsigned id) :
 void Algorithm1::pass(void* buf, size_t& size) {
 	if (isRunThread__ && size == sizeof(DataUnitPlusTime)) {
 		DataUnitPlusTime* pu = reinterpret_cast<DataUnitPlusTime*>(buf);
+		pu->mode = mad_n::Mad::ALGORITHM1;
 		mut__.lock();
 		fifo__.push_back(*pu);
 		mut__.unlock();
@@ -135,7 +136,7 @@ void Algorithm1::algorithm(void) {
 			false)) {
 				str = "Пойман нейтрино на МАД "
 						+ std::to_string(bufStat__.id_MAD);
-				to_journal(str);
+				//to_journal(str);
 				mut__.lock();
 				toBank(pool.count, LEN_WINDOW, &fifo__.front(),
 						pool.count - pool.begin);

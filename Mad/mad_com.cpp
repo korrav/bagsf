@@ -7,7 +7,7 @@
 #include "Mad.h"
 
 namespace mad_n {
-void Mad::comChangeGain(bool isBrod, int * gain) {
+void Mad::comChangeGain(bool isBrod, const int * gain) {
 	int command[5] = { COM_SET_GAIN };
 	for (int i = 1; i < 5; i++)
 		command[i] = gain[i - 1];
@@ -20,7 +20,7 @@ void Mad::comChangeGain(bool isBrod, int * gain) {
 				reinterpret_cast<sockaddr*>(&__madAddr), sizeof(__madAddr));
 }
 
-void Mad::comChangeNoise(bool isBrod, int noise) {
+void Mad::comChangeNoise(bool isBrod, const int& noise) {
 	int command[2] = { COM_SET_NOISE, noise };
 	if (isBrod)
 		sendto(__sockCon, reinterpret_cast<void*>(command), sizeof(command), 0,
@@ -76,6 +76,16 @@ void Mad::comChangeMode(bool isBrod, int mode) {
 		sendto(__sockCon, reinterpret_cast<void*>(command), sizeof(command), 0,
 				reinterpret_cast<sockaddr*>(&__madAddr), sizeof(__madAddr));
 
+}
+
+void Mad::comChangeModeGasikInit(void) {
+	comChangeMode(false, mad_n::Mad::GASIK);
+	comChangeNoise(false, NOISE_GASIK);
+	if(__id == 3)
+		comChangeGain(false, GAINS_GASIK_MAD3__);
+	else
+		comChangeGain(false, GAINS_GASIK_MAD__);
+	return;
 }
 
 void Mad::comGetStatus(bool isBrod) {
